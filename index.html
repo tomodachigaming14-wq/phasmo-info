@@ -1,0 +1,1105 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Phasmophobia Ghost Database & Maps</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #0a0c0e;
+            color: #e0e0e0;
+            line-height: 1.6;
+            padding: 20px;
+        }
+
+        /* Header & Search */
+        header {
+            text-align: center;
+            margin-bottom: 40px;
+            border-bottom: 1px solid #2a2e33;
+            padding-bottom: 20px;
+        }
+
+        h1 {
+            font-size: 2.5rem;
+            letter-spacing: 4px;
+            text-transform: uppercase;
+            color: #b0b8c0;
+            text-shadow: 0 0 10px rgba(255, 255, 255, 0.1);
+            margin-bottom: 20px;
+        }
+
+        .search-container {
+            max-width: 600px;
+            margin: 0 auto 15px;
+            position: relative;
+        }
+
+        #searchInput {
+            width: 100%;
+            padding: 12px 20px;
+            font-size: 1rem;
+            background: #14171a;
+            border: 1px solid #2a2e33;
+            color: #fff;
+            border-radius: 30px;
+            outline: none;
+            transition: border 0.3s;
+        }
+
+        #searchInput:focus {
+            border-color: #5a6b7a;
+        }
+
+        #searchInput::placeholder {
+            color: #55606a;
+        }
+
+        /* Filter Buttons */
+        .filter-container {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .filter-btn {
+            background: #111417;
+            color: #8899a6;
+            border: 1px solid #22272b;
+            padding: 6px 15px;
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            transition: all 0.2s;
+        }
+
+        .filter-btn:hover {
+            background: #181c20;
+            color: #b0b8c0;
+        }
+
+        .filter-btn.active {
+            background: #1e2a32;
+            color: #9bb7c9;
+            border-color: #5a6b7a;
+            box-shadow: 0 0 10px rgba(90, 107, 122, 0.2);
+        }
+
+        /* Section Visibility */
+        .section-hidden {
+            display: none !important;
+        }
+
+        /* Ghost Grid */
+        .ghost-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+            gap: 30px;
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .ghost-card {
+            background: #111417;
+            border: 1px solid #22272b;
+            border-radius: 12px;
+            overflow: hidden;
+            transition: transform 0.2s, box-shadow 0.2s;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .ghost-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.5);
+            border-color: #3a454d;
+        }
+
+        .card-header {
+            display: flex;
+            align-items: center;
+            padding: 15px;
+            background: #181c20;
+            border-bottom: 1px solid #22272b;
+        }
+
+        .ghost-img {
+            width: 60px;
+            height: 60px;
+            object-fit: contain;
+            background: #0a0c0e;
+            border-radius: 8px;
+            margin-right: 15px;
+            border: 1px solid #2a2e33;
+        }
+
+        .ghost-name {
+            font-size: 1.4rem;
+            font-weight: 600;
+            color: #fff;
+            letter-spacing: 1px;
+        }
+
+        .card-body {
+            padding: 15px;
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .info-section {
+            background: #0d0f11;
+            padding: 10px;
+            border-radius: 6px;
+            border-left: 3px solid #333;
+        }
+
+        .info-label {
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            color: #6b7a85;
+            letter-spacing: 1px;
+            margin-bottom: 4px;
+            font-weight: 700;
+        }
+
+        .info-text {
+            font-size: 0.9rem;
+            color: #c0c8cf;
+        }
+
+        .evidence-tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+            margin-top: 5px;
+        }
+
+        .evidence-tag {
+            background: #1e2a32;
+            color: #9bb7c9;
+            font-size: 0.75rem;
+            padding: 3px 8px;
+            border-radius: 12px;
+            border: 1px solid #2e3f4a;
+        }
+
+        .pros-cons {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-top: 5px;
+        }
+
+        .pros { border-left: 2px solid #2e6b3e; }
+        .cons { border-left: 2px solid #6b2e2e; }
+
+        .pros .info-label { color: #4a9e6b; }
+        .cons .info-label { color: #c45a5a; }
+
+        /* Equipment Section */
+        .equipment-section {
+            max-width: 1400px;
+            margin: 60px auto 20px;
+            border-top: 2px solid #22272b;
+            padding-top: 40px;
+        }
+
+        .equipment-section h2 {
+            text-align: center;
+            font-size: 2rem;
+            color: #b0b8c0;
+            margin-bottom: 30px;
+            letter-spacing: 2px;
+        }
+
+        .equipment-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            gap: 20px;
+        }
+
+        .equip-card {
+            background: #111417;
+            border: 1px solid #22272b;
+            border-radius: 8px;
+            padding: 15px;
+            text-align: center;
+            transition: background 0.2s;
+        }
+
+        .equip-card:hover {
+            background: #181c20;
+        }
+
+        .equip-img {
+            width: 50px;
+            height: 50px;
+            object-fit: contain;
+            margin-bottom: 10px;
+            filter: drop-shadow(0 0 5px rgba(255,255,255,0.1));
+        }
+
+        .equip-name {
+            font-weight: 600;
+            color: #fff;
+            margin-bottom: 5px;
+        }
+
+        .equip-purpose {
+            font-size: 0.85rem;
+            color: #8899a6;
+        }
+
+        /* Cursed Possessions Section */
+        .cursed-section {
+            max-width: 1400px;
+            margin: 60px auto 20px;
+            border-top: 2px solid #22272b;
+            padding-top: 40px;
+        }
+
+        .cursed-section h2 {
+            text-align: center;
+            font-size: 2rem;
+            color: #b0b8c0;
+            margin-bottom: 30px;
+            letter-spacing: 2px;
+        }
+
+        .cursed-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 20px;
+        }
+
+        .cursed-card {
+            background: #111417;
+            border: 1px solid #2a1e22;
+            border-left: 3px solid #6b2e2e;
+            border-radius: 8px;
+            padding: 15px;
+            transition: background 0.2s;
+        }
+
+        .cursed-card:hover {
+            background: #181c20;
+            border-left-color: #c45a5a;
+        }
+
+        .cursed-img {
+            width: 50px;
+            height: 50px;
+            object-fit: contain;
+            margin-bottom: 10px;
+            filter: drop-shadow(0 0 5px rgba(180, 80, 80, 0.2));
+        }
+
+        .cursed-name {
+            font-weight: 600;
+            color: #e0a0a0;
+            margin-bottom: 6px;
+            font-size: 1.05rem;
+        }
+
+        .cursed-purpose {
+            font-size: 0.85rem;
+            color: #a0b0bc;
+            margin-bottom: 6px;
+        }
+
+        .cursed-risk {
+            font-size: 0.8rem;
+            color: #c45a5a;
+            border-top: 1px solid #2a1e22;
+            padding-top: 6px;
+            margin-top: 6px;
+        }
+
+        /* Maps Section (List Layout) */
+        .maps-section {
+            max-width: 800px;
+            margin: 60px auto 20px;
+            border-top: 2px solid #22272b;
+            padding-top: 40px;
+        }
+
+        .maps-section h2 {
+            text-align: center;
+            font-size: 2rem;
+            color: #b0b8c0;
+            margin-bottom: 30px;
+            letter-spacing: 2px;
+        }
+
+        .map-list {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            max-height: 600px;
+            overflow-y: auto;
+            padding-right: 10px;
+        }
+
+        /* Custom Scrollbar for map list */
+        .map-list::-webkit-scrollbar {
+            width: 8px;
+        }
+        .map-list::-webkit-scrollbar-track {
+            background: #111417;
+            border-radius: 4px;
+        }
+        .map-list::-webkit-scrollbar-thumb {
+            background: #3a454d;
+            border-radius: 4px;
+        }
+        .map-list::-webkit-scrollbar-thumb:hover {
+            background: #5a6b7a;
+        }
+
+        .map-list-item {
+            background: #111417;
+            border: 1px solid #22272b;
+            border-radius: 8px;
+            padding: 15px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: background 0.2s, border-color 0.2s;
+            flex-shrink: 0;
+        }
+
+        .map-list-item:hover {
+            background: #181c20;
+            border-color: #3a454d;
+        }
+
+        .map-list-name {
+            font-size: 1.2rem;
+            font-weight: 600;
+            color: #e0e0e0;
+            letter-spacing: 1px;
+        }
+
+        .map-thumbnail {
+            width: 80px;
+            height: 50px;
+            object-fit: cover;
+            border-radius: 6px;
+            border: 1px solid #3a454d;
+            cursor: pointer;
+            transition: transform 0.2s, border-color 0.2s;
+        }
+
+        .map-thumbnail:hover {
+            transform: scale(1.1);
+            border-color: #b0b8c0;
+        }
+
+        /* --- MODAL LIGHTBOX --- */
+        .modal {
+            display: none; 
+            position: fixed; 
+            z-index: 1000; 
+            left: 0;
+            top: 0;
+            width: 100%; 
+            height: 100%; 
+            background-color: rgba(0, 0, 0, 0.95); 
+            overflow: hidden;
+            flex-direction: column;
+        }
+
+        .modal.active {
+            display: flex;
+        }
+
+        .modal-header {
+            padding: 15px 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: #111417;
+            border-bottom: 1px solid #333;
+            z-index: 10;
+        }
+
+        .modal-title {
+            color: #b0b8c0;
+            font-size: 1.5rem;
+            font-weight: 600;
+            letter-spacing: 1px;
+        }
+
+        .modal-controls {
+            display: flex;
+            gap: 10px;
+        }
+
+        .modal-btn {
+            background: #22272b;
+            color: #fff;
+            border: 1px solid #3a454d;
+            padding: 8px 15px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 1rem;
+            transition: background 0.2s, color 0.2s;
+        }
+
+        .modal-btn:hover {
+            background: #3a454d;
+        }
+
+        .close-btn {
+            background: #6b2e2e;
+            border-color: #c45a5a;
+        }
+
+        .close-btn:hover {
+            background: #c45a5a;
+        }
+
+        .modal-body {
+            flex-grow: 1;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            overflow: auto; 
+            padding: 20px;
+            position: relative;
+        }
+
+        #modalImage {
+            max-width: 100%;
+            max-height: 100%;
+            transition: transform 0.2s ease-out;
+            transform-origin: center center;
+            user-select: none;
+            -webkit-user-drag: none;
+        }
+
+        /* Responsive */
+        @media (max-width: 600px) {
+            .ghost-grid { grid-template-columns: 1fr; }
+            h1 { font-size: 1.8rem; }
+            .modal-header { flex-direction: column; gap: 10px; }
+            .map-list-item { flex-direction: column; gap: 10px; text-align: center; }
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <h1>Phasmophobia Database</h1>
+        
+        <div class="search-container">
+            <input type="text" id="searchInput" placeholder="Search across all categories...">
+        </div>
+        
+        <!-- Filter Buttons -->
+        <div class="filter-container">
+            <button class="filter-btn active" data-filter="all">All</button>
+            <button class="filter-btn" data-filter="ghosts">Ghosts</button>
+            <button class="filter-btn" data-filter="equipment">Equipment</button>
+            <button class="filter-btn" data-filter="cursed">Cursed Possessions</button>
+            <button class="filter-btn" data-filter="maps">Map Layouts</button>
+        </div>
+    </header>
+
+    <!-- Ghosts Section -->
+    <section id="ghost-section">
+        <main id="ghostGrid" class="ghost-grid">
+            <!-- Ghost cards will be injected here by JavaScript -->
+        </main>
+    </section>
+
+    <!-- Equipment Section -->
+    <section id="equipment-section" class="equipment-section">
+        <h2>Equipment & Purpose</h2>
+        <div class="equipment-grid" id="equipGrid">
+            <!-- Equipment cards injected here -->
+        </div>
+    </section>
+
+    <!-- Cursed Possessions Section -->
+    <section id="cursed-section" class="cursed-section">
+        <h2>Cursed Possessions</h2>
+        <div class="cursed-grid" id="cursedGrid">
+            <!-- Cursed items injected here -->
+        </div>
+    </section>
+
+    <!-- Maps Section (List Layout) -->
+    <section id="maps-section" class="maps-section">
+        <h2>Map Layouts</h2>
+        <div class="map-list" id="mapList">
+            <!-- Map list items injected here -->
+        </div>
+    </section>
+
+    <!-- Modal for Map Zooming -->
+    <div id="mapModal" class="modal">
+        <div class="modal-header">
+            <div class="modal-title" id="modalTitle">Map Title</div>
+            <div class="modal-controls">
+                <button class="modal-btn" onclick="zoomImage(0.2)">Zoom In +</button>
+                <button class="modal-btn" onclick="zoomImage(-0.2)">Zoom Out -</button>
+                <button class="modal-btn" onclick="resetZoom()">Reset</button>
+                <button class="modal-btn close-btn" onclick="closeModal()">Close ✕</button>
+            </div>
+        </div>
+        <div class="modal-body" id="modalBody">
+            <img id="modalImage" src="" alt="Zoomed Map">
+        </div>
+    </div>
+
+    <script>
+        // ---------------------------------------------------------------
+        // GHOST DATA
+        // ---------------------------------------------------------------
+        const ghosts = [
+            {
+                name: "Banshee",
+                img: "images/banshee.png",
+                evidence: ["UV", "Ghost Orbs", "D.O.T.S."],
+                description: "A creature of Irish folklore, the Banshee is known for its distinctive wail. It tends to fixate on a single target.",
+                pros: ["Only hunts one specific player (ignores others until target dies).", "Distinctive female-only model/name.", "33% chance to scream on Parabolic Microphone."],
+                cons: ["Can be difficult to identify if you are not the target.", "No unique speed modifiers."]
+            },
+            {
+                name: "Demon",
+                img: "images/demon.png",
+                evidence: ["Freezing", "UV", "Ghost Writing"],
+                description: "The most aggressive ghost type. It is known for its ability to initiate hunts with little to no warning.",
+                pros: ["Can hunt at any sanity level (rare).", "Crucifix range is larger."],
+                cons: ["Extremely dangerous due to early hunts.", "Incense only prevents hunts for 60 seconds instead of 90."]
+            },
+            {
+                name: "Deogen",
+                img: "images/deogen.png",
+                evidence: ["Spirit Box", "Ghost Writing", "D.O.T.S."],
+                description: "A rare ghost that always knows where you are. It is fast when far away but slows down drastically when close.",
+                pros: ["Cannot be hidden from (always knows your location).", "Slows to 0.4 m/s when within 2.5 meters."],
+                cons: ["You cannot lose it by hiding.", "Very fast approach speed."]
+            },
+            {
+                name: "Goryo",
+                img: "images/goryo.png",
+                evidence: ["EMF 5", "UV", "D.O.T.S."],
+                description: "A ghost that prefers to stay in its room. It is shy and will not show itself easily.",
+                pros: ["Guaranteed D.O.T.S. on 1 evidence runs.", "Rarely changes ghost rooms."],
+                cons: ["D.O.T.S. only visible through camera when no one is in the room.", "Hard to see with the naked eye."]
+            },
+            {
+                name: "Hantu",
+                img: "images/hantu.png",
+                evidence: ["Ghost Orbs", "Freezing", "UV"],
+                description: "A ghost that thrives in the cold. It becomes significantly faster in lower temperatures.",
+                pros: ["Very fast in cold rooms (can outrun players).", "Has visible freezing breath during hunts if breaker is off."],
+                cons: ["Slower in warm rooms.", "Cannot turn on the breaker."]
+            },
+            {
+                name: "Jinn",
+                img: "images/jinn.png",
+                evidence: ["EMF 5", "Freezing", "UV"],
+                description: "A territorial ghost that uses electricity to its advantage. It is faster when the breaker is on.",
+                pros: ["Fast movement speed when breaker is on and it sees you."],
+                cons: ["Cannot turn off the breaker.", "Loses its speed advantage if the breaker is off."]
+            },
+            {
+                name: "Mare",
+                img: "images/mare.png",
+                evidence: ["Ghost Orbs", "Spirit Box", "Ghost Writing"],
+                description: "A ghost that prefers the darkness. It is more likely to turn off lights and burst them.",
+                pros: ["Can hunt at higher sanity in the dark."],
+                cons: ["Lower hunt sanity threshold in lit rooms.", "More likely to turn off lights."]
+            },
+            {
+                name: "Myling",
+                img: "images/myling.png",
+                evidence: ["EMF 5", "UV", "Ghost Writing"],
+                description: "A quiet ghost that is known for its stealth during hunts. It is hard to hear approaching.",
+                pros: ["Very quiet footsteps during hunts (only audible within 12m).", "Frequent Paranormal sounds on Parabolic Mic."],
+                cons: ["Hard to track by sound during a hunt.", "No speed advantage."]
+            },
+            {
+                name: "Obake",
+                img: "images/obake.png",
+                evidence: ["EMF 5", "Ghost Orbs", "UV"],
+                description: "A shapeshifter. It can change its model during a hunt and leaves unique evidence.",
+                pros: ["Can leave unique 6-finger handprints.", "May leave no UV evidence at all.", "Shapeshifts during hunts."],
+                cons: ["UV evidence is less reliable.", "Fingerprints may disappear faster."]
+            },
+            {
+                name: "Oni",
+                img: "images/oni.png",
+                evidence: ["EMF 5", "Freezing", "D.O.T.S."],
+                description: "A demon from Japanese folklore. It is extremely active and visible during hunts.",
+                pros: ["Very visible during hunts.", "More active when players are nearby."],
+                cons: ["Drains more sanity during ghost events (20% vs 10%).", "Cannot do Ghost Mist events."]
+            },
+            {
+                name: "Onryo",
+                img: "images/onryo.png",
+                evidence: ["Ghost Orbs", "Spirit Box", "Freezing"],
+                description: "A vengeful spirit that fears fire. It will attempt to hunt after blowing out flames.",
+                pros: ["A lit flame acts like a crucifix within 4m.", "Cannot hunt if a flame is nearby."],
+                cons: ["Will blow out flames and then hunt.", "Hunt threshold is 60% sanity (or 40% near flame)."]
+            },
+            {
+                name: "Phantom",
+                img: "images/phantom.png",
+                evidence: ["Spirit Box", "UV", "D.O.T.S."],
+                description: "A ghost that haunts the living. It disappears when photographed and is less visible during hunts.",
+                pros: ["Taking a photo makes it vanish temporarily.", "Drains sanity at 0.5%/s within 10m during hunts/events."],
+                cons: ["Hard to see during hunts (longer blink invisibility).", "Sanity drain aura is dangerous."]
+            },
+            {
+                name: "Poltergeist",
+                img: "images/poltergeist.png",
+                evidence: ["Spirit Box", "UV", "Ghost Writing"],
+                description: "A noisy ghost that throws objects around. It is powerless in an empty room.",
+                pros: ["Throws multiple objects at once (Poltergeist Explosion).", "Throws objects every 0.5s during hunts."],
+                cons: ["Very weak if there is nothing to throw.", "Drains sanity rapidly when throwing items."]
+            },
+            {
+                name: "Revenant",
+                img: "images/revenant.png",
+                evidence: ["Ghost Orbs", "Freezing", "Ghost Writing"],
+                description: "A slow, rotting corpse that becomes terrifyingly fast when it sees you.",
+                pros: ["Extremely fast (3.0 m/s) when it has line of sight."],
+                cons: ["Extremely slow (1.0 m/s) when it loses sight of you.", "Relies entirely on sight."]
+            },
+            {
+                name: "Shade",
+                img: "images/shade.png",
+                evidence: ["EMF 5", "Freezing", "Ghost Writing"],
+                description: "A shy ghost. It is very unlikely to interact or hunt when players are nearby.",
+                pros: ["Very passive; rarely hunts.", "Safe to investigate if you are in a group."],
+                cons: ["Hard to get evidence due to low activity.", "Cannot hunt if players are in the same room."]
+            },
+            {
+                name: "Spirit",
+                img: "images/spirit.png",
+                evidence: ["EMF 5", "Spirit Box", "Ghost Writing"],
+                description: "The most basic ghost type. It has no special strengths or weaknesses.",
+                pros: ["Incense lasts longer (180s vs 90s) to prevent hunts."],
+                cons: ["No unique behaviors to help identify it easily."]
+            },
+            {
+                name: "Thaye",
+                img: "images/thaye.png",
+                evidence: ["Ghost Orbs", "Ghost Writing", "D.O.T.S."],
+                description: "An ancient ghost that ages rapidly. It is very fast at the start but slows down over time.",
+                pros: ["Very fast and active early in the investigation."],
+                cons: ["Becomes very slow after aging.", "Aging is accelerated when players are near."]
+            },
+            {
+                name: "The Mimic",
+                img: "images/mimic.png",
+                evidence: ["Spirit Box", "Freezing", "UV", "Fake Orbs"],
+                description: "A deceptive ghost that copies the traits of others. It is the only ghost with four evidence.",
+                pros: ["Can mimic any ghost's behavior.", "Always shows fake Ghost Orbs."],
+                cons: ["Behaves unpredictably.", "Requires careful evidence checking."]
+            },
+            {
+                name: "The Twins",
+                img: "images/twins.png",
+                evidence: ["EMF 5", "Spirit Box", "Freezing"],
+                description: "Two entities in one. They can interact with objects in different locations.",
+                pros: ["One twin can interact while the other hunts.", "Decoy interactions confuse players."],
+                cons: ["Slightly slower or faster than normal depending on the twin.", "Hard to pin down interaction range."]
+            },
+            {
+                name: "Wraith",
+                img: "images/wraith.png",
+                evidence: ["EMF 5", "Spirit Box", "D.O.T.S."],
+                description: "A ghost that can fly. It leaves no footprints and can travel through walls.",
+                pros: ["Cannot be tracked by Salt (does not step in it).", "Can teleport to a player."],
+                cons: ["No special speed advantage.", "Teleporting can be dangerous."]
+            },
+            {
+                name: "Yokai",
+                img: "images/yokai.png",
+                evidence: ["Ghost Orbs", "Spirit Box", "D.O.T.S."],
+                description: "A ghost that is easily angered by talking. It has poor hearing during hunts.",
+                pros: ["Cannot hear you during hunts unless you are very close."],
+                cons: ["Talking near it can trigger an early hunt.", "Extremely dangerous if you use voice chat."]
+            },
+            {
+                name: "Yurei",
+                img: "images/yurei.png",
+                evidence: ["Ghost Orbs", "Freezing", "D.O.T.S."],
+                description: "A ghost that drains sanity. It can slam doors and has a strong sanity drain aura.",
+                pros: ["Incense can trap it in its room for 90 seconds."],
+                cons: ["Drains sanity significantly faster than other ghosts.", "Hard to regain sanity near it."]
+            },
+
+            // --- NEW GHOSTS (2026 additions) ---
+            {
+                name: "Aswang",
+                img: "images/aswang.png",
+                evidence: ["Freezing", "Ghost Writing", "D.O.T.S."],
+                description: "A vicious blood-drinking ghost introduced during the Alan Wake event. It is known for its relentless pursuit and unique interaction with hiding spots.",
+                pros: ["Accelerates faster than any other ghost with line of sight (17.44s to max speed)."],
+                cons: ["Ends the hunt immediately if it sees you enter an official hiding spot.", "Base hunt speed is 1.53 m/s."]
+            },
+            {
+                name: "Dayan",
+                img: "images/dayan.png",
+                evidence: ["EMF 5", "Ghost Orbs", "Spirit Box"],
+                description: "A ghost that reacts to movement. It can only appear as a female model and name. Its speed is tied to whether you are moving or standing still.",
+                pros: ["Distinctive gender lock (female only)."],
+                cons: ["Speeds up when you move within 10 meters.", "Slows down when you stop moving, making it harder to gauge."]
+            },
+            {
+                name: "Deildegast",
+                img: "images/deildegast.png",
+                evidence: ["EMF 5", "Ghost Writing", "D.O.T.S."],
+                description: "A ghost doomed to fixate on misplaced objects. It is incredibly fast initially but can be slowed by disturbing the environment. Added in the v0.18.0.0 update.",
+                pros: ["Base hunt speed is a terrifying 3.0 m/s (matches Revenant chase speed)."],
+                cons: ["Each unique object thrown before a hunt reduces its speed by 0.1 m/s.", "Throwing ~30 objects brings it down to 0.4 m/s (slowest possible).", "Dead players can also throw objects to help slow it down."]
+            },
+            {
+                name: "Gallu",
+                img: "images/gallu.png",
+                evidence: ["EMF 5", "Spirit Box", "UV"],
+                description: "A ghost that cycles through emotional states. Its behavior and speed change depending on whether it is Normal, Enraged, or Weakened.",
+                pros: ["Distinct state changes can help identification."],
+                cons: ["Enraged state moves at 1.96 m/s and walks over salt without leaving footprints.", "Unpredictable behavior due to state cycling."]
+            },
+            {
+                name: "Kormos",
+                img: "images/kormos.png",
+                evidence: ["Ghost Orbs", "Spirit Box", "UV"],
+                description: "A completely blind ghost introduced during the Alan Wake event. It relies entirely on sound to track players, making it unique among the roster.",
+                pros: ["Completely blind; line of sight means nothing to it.", "Can be avoided by standing completely still and silent."],
+                cons: ["Detects sprinting from 30 meters away.", "Speeds up to 3.65 m/s when it detects you.", "Crouch walking is still detectable within 10m."]
+            },
+            {
+                name: "Moroi",
+                img: "images/moroi.png",
+                evidence: ["Spirit Box", "Freezing", "Ghost Writing"],
+                description: "A curse-bearing ghost. It becomes faster as your sanity drops and can curse players who hear it through the Parabolic Microphone.",
+                pros: ["Incense blinds it for 7 seconds instead of 5."],
+                cons: ["Speed increases as average sanity decreases.", "Cursed players drain sanity twice as fast, even in lit rooms."]
+            },
+            {
+                name: "Obambo",
+                img: "images/obambo.png",
+                evidence: ["UV", "Ghost Writing", "D.O.T.S."],
+                description: "A ghost with shifting temperaments. It alternates between calm and aggressive states every two minutes, even during hunts.",
+                pros: ["Calm state is slower and less dangerous."],
+                cons: ["Aggressive state is faster and more likely to hunt.", "State changes can occur mid-hunt, making it unpredictable."]
+            },
+            {
+                name: "Raiju",
+                img: "images/raiju.png",
+                evidence: ["EMF 5", "Ghost Orbs", "D.O.T.S."],
+                description: "A ghost that feeds on electrical energy. It becomes significantly more dangerous when players leave electronic equipment active nearby.",
+                pros: ["Electronics flicker at 15m instead of 10m, giving an earlier warning."],
+                cons: ["Speed increases to 2.5 m/s when near active electronics.", "Hunt sanity threshold rises when electronics are present."]
+            }
+        ];
+
+        // ---------------------------------------------------------------
+        // EQUIPMENT DATA
+        // ---------------------------------------------------------------
+        const equipment = [
+            { name: "D.O.T.S. Projector", img: "images/dots.png", purpose: "Detects ghost silhouette evidence." },
+            { name: "EMF Reader", img: "images/emf.png", purpose: "Detects EMF levels (up to 5)." },
+            { name: "Flashlight", img: "images/flashlight.png", purpose: "Provides light in dark areas." },
+            { name: "Ghost Writing Book", img: "images/book.png", purpose: "Ghosts may write in it for evidence." },
+            { name: "Spirit Box", img: "images/spiritbox.png", purpose: "Ask questions to get vocal responses." },
+            { name: "Thermometer", img: "images/thermometer.png", purpose: "Detects freezing temperatures." },
+            { name: "UV Light", img: "images/uvlight.png", purpose: "Reveals fingerprints and footprints." },
+            { name: "Video Camera", img: "images/videocam.png", purpose: "Detects Ghost Orbs and monitors activity." },
+            { name: "Crucifix", img: "images/crucifix.png", purpose: "Prevents hunts within its radius." },
+            { name: "Incense", img: "images/incense.png", purpose: "Blinds/slows ghosts during hunts or prevents hunts." },
+            { name: "Salt", img: "images/salt.png", purpose: "Ghosts leave UV footprints when stepping in it." },
+            { name: "Parabolic Microphone", img: "images/parabolic.png", purpose: "Listens for paranormal sounds over long distances." },
+            { name: "Photo Camera", img: "images/photocam.png", purpose: "Takes photos for extra rewards." },
+            { name: "Sanity Medication", img: "images/pills.png", purpose: "Restores lost sanity." },
+            { name: "Motion Sensor", img: "images/motion.png", purpose: "Detects movement and alerts the truck." },
+            { name: "Sound Sensor", img: "images/soundsensor.png", purpose: "Detects sounds in a radius." },
+            { name: "Tripod", img: "images/tripod.png", purpose: "Holds video cameras in place." },
+            { name: "Igniter", img: "images/igniter.png", purpose: "Lights firelights and incense." }
+        ];
+
+        // ---------------------------------------------------------------
+        // CURSED POSSESSIONS DATA
+        // ---------------------------------------------------------------
+        const cursedItems = [
+            {
+                name: "Ouija Board",
+                img: "images/ouija.png",
+                purpose: "Communicate directly with the ghost. Ask questions like 'Where are you?', 'Where is the bone?', or 'How sane am I?' to get answers.",
+                risk: "Each question drains 5–20% sanity. Say 'Goodbye' to deactivate safely. Failing to do so, or running out of sanity mid-question, breaks the board and triggers a cursed hunt. Asking 'Hide and seek?' also triggers a hunt."
+            },
+            {
+                name: "Haunted Mirror",
+                img: "images/mirror.png",
+                purpose: "Look into the mirror to see the ghost's current favorite room. One of the safest cursed objects when used briefly.",
+                risk: "Staring too long shatters the mirror and starts a cursed hunt. Stop looking before the glass breaks."
+            },
+            {
+                name: "Music Box",
+                img: "images/musicbox.png",
+                purpose: "Activate it to play a tune. If the ghost is within 20m, it sings along, revealing its location. If within 5m, it walks toward the box.",
+                risk: "Throwing it while active, reaching 0% sanity, or letting the ghost walk toward it for more than 5 seconds triggers a cursed hunt. Holding it drains ~75% sanity over the full song."
+            },
+            {
+                name: "Summoning Circle",
+                img: "images/summoningcircle.png",
+                purpose: "Light all 5 candles to summon the ghost in full form for 5 seconds—perfect for a ghost photo objective. The ghost is frozen and cannot kill during this window.",
+                risk: "Each candle drains 16% sanity (80% total). After 5 seconds, a cursed hunt begins immediately. A Tier 3 Crucifix placed nearby can prevent the hunt."
+            },
+            {
+                name: "Voodoo Doll",
+                img: "images/voodoodoll.png",
+                purpose: "Push pins into the doll to force the ghost to interact—potentially giving you EMF 5, UV fingerprints, or other evidence.",
+                risk: "Each pin drains 5% sanity. If the hidden heart pin is pushed, it drains 10% and instantly triggers a cursed hunt. Using it at 0% sanity pushes all remaining pins and hunts."
+            },
+            {
+                name: "Tarot Cards",
+                img: "images/tarot.png",
+                purpose: "Draw a random card from a 10-card deck. Effects range from restoring sanity (The Sun) to trapping the ghost (The Hermit) to reviving a dead player (The High Priestess).",
+                risk: "Death triggers a cursed hunt. The Moon drops your sanity to 0%. The Hanged Man kills you instantly (1% chance). Drawing during a hunt always gives The Fool (no effect)."
+            },
+            {
+                name: "Monkey Paw",
+                img: "images/monkeypaw.png",
+                purpose: "Make wishes like 'I wish to be sane,' 'I wish to see the ghost,' 'I wish to trap the ghost,' or 'I wish to leave.' Number of wishes depends on difficulty (3–5).",
+                risk: "Every wish has a penalty. 'I wish for life' has a 50% chance of killing you. 'I wish for knowledge' teleports the ghost to you and starts a hunt. 'I wish to see the ghost' locks doors and hunts after 5 seconds."
+            }
+        ];
+
+        // ---------------------------------------------------------------
+        // MAP DATA
+        // ---------------------------------------------------------------
+        const maps = [
+            { name: "Map 1 (Tanglewood Drive)", img: "images/map/map1.jpg" },
+            { name: "Map 2 (42 Edgefield Road)", img: "images/map/map2.jpg" },
+            { name: "Map 3 (10 Ridgeview Court)", img: "images/map/map3.jpg" },
+            { name: "Map 4 (Nell's Diner)", img: "images/map/map4.jpg" },
+            { name: "Map 5 (Grafton Farmhouse)", img: "images/map/map5.jpg" },
+            { name: "Map 6 (13 Willow Street)", img: "images/map/map6.jpg" },
+            { name: "Map 7 (Point Hope - Small)", img: "images/map/map7.jpg" },
+            { name: "Map 8 (Prison)", img: "images/map/map8.jpg" },
+            { name: "Map 9 (Camp Woodwind)", img: "images/map/map9.jpg" },
+            { name: "Map 10 (Point Hope - Medium)", img: "images/map/map10.jpg" },
+            { name: "Map 11-1 Left (Brownstone HS)", img: "images/map/map11-1-left.jpg" },
+            { name: "Map 11-1 Right (Brownstone HS)", img: "images/map/map11-1-right.jpg" },
+            { name: "Map 11-2 Right (Brownstone HS)", img: "images/map/map11-2-right.jpg" },
+            { name: "Map 12 (Bleasdale Farmhouse)", img: "images/map/map12.jpg" },
+            { name: "Map 13-1 (Sunny Meadows - Restricted)", img: "images/map/map13-1.jpg" },
+            { name: "Map 13-2 (Sunny Meadows - Male Wing)", img: "images/map/map13-2.jpg" },
+            { name: "Map 13-3 (Sunny Meadows - Female Wing)", img: "images/map/map13-3.jpg" },
+            { name: "Map 13-4 (Sunny Meadows - Basement)", img: "images/map/map13-4.jpg" },
+            { name: "Map 13-5 (Sunny Meadows - Hospital)", img: "images/map/map13-5.jpg" },
+            { name: "Map 14 (Prison - Full)", img: "images/map/map14.jpg" },
+            { name: "Map 15 (Maple Lodge Campsite)", img: "images/map/map15.jpg" },
+            { name: "Map 16 (Brownstone HS - Full)", img: "images/map/map16.jpg" },
+            { name: "Map 17 (Sunny Meadows - Full)", img: "images/map/map17.jpg" }
+        ];
+
+        // ---------------------------------------------------------------
+        // RENDERING & FILTER LOGIC
+        // ---------------------------------------------------------------
+
+        const ghostGrid = document.getElementById('ghostGrid');
+        const equipGrid = document.getElementById('equipGrid');
+        const cursedGrid = document.getElementById('cursedGrid');
+        const mapList = document.getElementById('mapList');
+        const searchInput = document.getElementById('searchInput');
+        const filterBtns = document.querySelectorAll('.filter-btn');
+
+        let currentFilter = 'all';
+        let searchQuery = '';
+
+        // Render Ghost Cards
+        function renderGhosts() {
+            ghostGrid.innerHTML = ghosts.map(ghost => `
+                <div class="ghost-card" data-search="${(ghost.name + ' ' + ghost.evidence.join(' ') + ' ' + ghost.description).toLowerCase()}">
+                    <div class="card-header">
+                        <img src="${ghost.img}" alt="${ghost.name}" class="ghost-img" onerror="this.style.display='none'">
+                        <span class="ghost-name">${ghost.name}</span>
+                    </div>
+                    <div class="card-body">
+                        <div class="info-section">
+                            <div class="info-label">Description</div>
+                            <div class="info-text">${ghost.description}</div>
+                        </div>
+                        
+                        <div class="info-section">
+                            <div class="info-label">Evidence</div>
+                            <div class="evidence-tags">
+                                ${ghost.evidence.map(ev => `<span class="evidence-tag">${ev}</span>`).join('')}
+                            </div>
+                        </div>
+
+                        <div class="pros-cons">
+                            <div class="info-section pros">
+                                <div class="info-label">Pros / Traits</div>
+                                <div class="info-text" style="font-size:0.8rem">${ghost.pros.join('<br>')}</div>
+                            </div>
+                            <div class="info-section cons">
+                                <div class="info-label">Cons / Weakness</div>
+                                <div class="info-text" style="font-size:0.8rem">${ghost.cons.join('<br>')}</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // Render Equipment Cards
+        function renderEquipment() {
+            equipGrid.innerHTML = equipment.map(item => `
+                <div class="equip-card" data-search="${(item.name + ' ' + item.purpose).toLowerCase()}">
+                    <img src="${item.img}" alt="${item.name}" class="equip-img" onerror="this.style.display='none'">
+                    <div class="equip-name">${item.name}</div>
+                    <div class="equip-purpose">${item.purpose}</div>
+                </div>
+            `).join('');
+        }
+
+        // Render Cursed Possessions Cards
+        function renderCursed() {
+            cursedGrid.innerHTML = cursedItems.map(item => `
+                <div class="cursed-card" data-search="${(item.name + ' ' + item.purpose + ' ' + item.risk).toLowerCase()}">
+                    <img src="${item.img}" alt="${item.name}" class="cursed-img" onerror="this.style.display='none'">
+                    <div class="cursed-name">${item.name}</div>
+                    <div class="cursed-purpose">${item.purpose}</div>
+                    <div class="cursed-risk">⚠ ${item.risk}</div>
+                </div>
+            `).join('');
+        }
+
+        // Render Maps List
+        function renderMaps() {
+            mapList.innerHTML = maps.map(map => `
+                <div class="map-list-item" data-search="${map.name.toLowerCase()}">
+                    <div class="map-list-name">${map.name}</div>
+                    <img src="${map.img}" alt="${map.name} Thumbnail" class="map-thumbnail" data-img="${map.img}" data-title="${map.name}" onerror="this.style.display='none'">
+                </div>
+            `).join('');
+        }
+
+        // Initial Render
+        renderGhosts();
+        renderEquipment();
+        renderCursed();
+        renderMaps();
+
+        // ---------------------------------------------------------------
+        // FILTER & SEARCH ENGINE
+        // ---------------------------------------------------------------
+        function applyFilters() {
+            searchQuery = searchInput.value.toLowerCase().trim();
+            
+            // 1. Toggle Section Visibility based on active button
+            document.getElementById('ghost-section').classList.toggle('section-hidden', currentFilter !== 'all' && currentFilter !== 'ghosts');
+            document.getElementById('equipment-section').classList.toggle('section-hidden', currentFilter !== 'all' && currentFilter !== 'equipment');
+            document.getElementById('cursed-section').classList.toggle('section-hidden', currentFilter !== 'all' && currentFilter !== 'cursed');
+            document.getElementById('maps-section').classList.toggle('section-hidden', currentFilter !== 'all' && currentFilter !== 'maps');
+
+            // 2. Filter individual cards inside the visible sections
+            const allCards = document.querySelectorAll('.ghost-card, .equip-card, .cursed-card, .map-list-item');
+            
+            allCards.forEach(card => {
+                const searchString = card.getAttribute('data-search') || '';
+                if (searchString.includes(searchQuery)) {
+                    card.style.display = ''; // Show
+                } else {
+                    card.style.display = 'none'; // Hide
+                }
+            });
+        }
+
+        // Search Input Listener
+        searchInput.addEventListener('input', applyFilters);
+
+        // Filter Button Listener
+        filterBtns.forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                // Remove active class from all
+                filterBtns.forEach(b => b.classList.remove('active'));
+                // Add to clicked
+                e.target.classList.add('active');
+                // Set current filter
+                currentFilter = e.target.getAttribute('data-filter');
+                // Apply
+                applyFilters();
+            });
+        });
+
+        // ---------------------------------------------------------------
+        // MODAL LOGIC
+        // ---------------------------------------------------------------
+        const modal = document.getElementById('mapModal');
+        const modalImg = document.getElementById('modalImage');
+        const modalTitle = document.getElementById('modalTitle');
+        let currentZoom = 1;
+
+        // Use Event Delegation so we don't break on apostrophes in names
+        document.getElementById('mapList').addEventListener('click', (e) => {
+            if (e.target.classList.contains('map-thumbnail')) {
+                const imgSrc = e.target.getAttribute('data-img');
+                const title = e.target.getAttribute('data-title');
+                openModal(imgSrc, title);
+            }
+        });
+
+        function openModal(imgSrc, title) {
+            modalImg.src = imgSrc;
+            modalTitle.textContent = title;
+            currentZoom = 1;
+            modalImg.style.transform = `scale(${currentZoom})`;
+            modal.classList.add('active');
+            document.body.style.overflow = 'hidden'; // Prevent background scrolling
+        }
+
+        function closeModal() {
+            modal.classList.remove('active');
+            document.body.style.overflow = 'auto'; // Restore scrolling
+        }
+
+        function zoomImage(factor) {
+            currentZoom += factor;
+            if (currentZoom < 1) currentZoom = 1; // Don't zoom out smaller than original size
+            if (currentZoom > 4) currentZoom = 4; // Cap zoom at 4x
+            modalImg.style.transform = `scale(${currentZoom})`;
+        }
+
+        function resetZoom() {
+            currentZoom = 1;
+            modalImg.style.transform = `scale(${currentZoom})`;
+        }
+
+        // Close modal when clicking outside the image area
+        modal.addEventListener('click', (e) => {
+            if (e.target === modal || e.target.classList.contains('modal-body')) {
+                closeModal();
+            }
+        });
+
+        // Close modal with Escape key
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape' && modal.classList.contains('active')) {
+                closeModal();
+            }
+        });
+    </script>
+</body>
+</html>
